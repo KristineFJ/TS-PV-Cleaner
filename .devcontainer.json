@@ -2,14 +2,8 @@
   "name": "TS-Core-TEMPLATE Container",
   "dockerFile": "./Dockerfile.dev",
   "settings": {
-    // This dev container does include /bin/bash if you prefer to use it instead of ash.
-    "terminal.integrated.shell.linux": "/bin/sh"
+    "editor.formatOnSave": true
   },
-
-  "remoteEnv": {
-    "SHELL": "/bin/sh"
-  },
-
   "extensions": [
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
@@ -23,5 +17,9 @@
   "mounts": [
     "source=ts-core-modules,target=/workspace/node_modules,type=volume"
   ],
+  "remoteEnv": {
+    "SHELL": "/bin/bash"
+  },
+
   "postCreateCommand": "sudo chown node -R node_modules && npm i"
 }
