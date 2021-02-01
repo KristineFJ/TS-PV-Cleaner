@@ -10,10 +10,6 @@ updates:
     directory: /
     schedule:
       interval: daily
-    assignees:
-      - KristianFJones
-    reviewers:
-      - KristianFJones
 
   # Maintain dependencies for npm
   - package-ecosystem: npm
@@ -21,17 +17,9 @@ updates:
     schedule:
       interval: daily
     versioning-strategy: increase
-    assignees:
-      - KristianFJones
-    reviewers:
-      - KristianFJones
 
   # Maintain dependencies for Docker
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: daily
-    assignees:
-      - KristianFJones
-    reviewers:
-      - KristianFJones
