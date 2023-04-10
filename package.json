@@ -9,11 +9,11 @@
     "test": "ts-estest ./src",
     "prepublishOnly": "npm run build",
     "build": "tsc -p ./tsconfig.build.json",
-    "start:debug": "node --loader @k-foss/ts-esnode --experimental-modules --experimental-specifier-resolution=node --harmony-top-level-await ./",
+    "start:debug": "node --loader @k-foss/ts-esnode --experimental-modules --experimental-specifier-resolution=node ./",
     "dev": "nodemon",
     "prettier": "prettier --config .prettierrc --check \"src/**/*ts\"",
     "lint": "eslint ./src --ext .js,.ts",
-    "runBin": "node --loader @k-foss/ts-esnode --experimental-modules --experimental-specifier-resolution=node --harmony-top-level-await ./src/Utils/runScript.ts"
+    "runBin": "node --loader @k-foss/ts-esnode --experimental-modules --experimental-specifier-resolution=node ./src/Utils/runScript.ts"
   },
   "devDependencies": {
     "@k-foss/ts-esnode": "^2.0.3",
