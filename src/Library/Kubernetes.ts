@@ -10,15 +10,18 @@ export class KubeAPI {
   public kubeAPI: k8s.CoreV1Api; 
 
   public constructor() {
-    this.kc.loadFromFile(process.env.KUBECONFIG as string);
+    this.kc.loadFromFile(process.env.KUBECONFIG as string, {
+      
+    });
+
+    this.kc.setCurrentContext('k0s')
 
     this.kubeAPI = this.kc.makeApiClient(k8s.CoreV1Api);
   }
-  
 
-  public async getPVC(): Promise<void> {
-    const pvResponse = await this.kubeAPI.listPersistentVolume();
+  public async getPVs(): Promise<k8s.V1PersistentVolume[]> {
+    const { body: { items } } = await this.kubeAPI.listPersistentVolume();
 
-    logger.log(LogMode.INFO, `All PVs`, pvResponse.body);
+    return items;
   }
 }
