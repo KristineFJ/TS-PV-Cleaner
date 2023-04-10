@@ -38,7 +38,13 @@ if (!!!pool) {
 }
 
 
-await nasAPI.getDatasets();
+const datasets = await nasAPI.getDatasets();
+
+for (const dataset of datasets) {
+  if (dataset.id.startsWith('Site1.NAS1.Pool1/k8s')) {
+    logger.log(LogMode.INFO, `Dataset`, dataset)
+  }
+}
 
 
 await sayHello('K-FOSS');

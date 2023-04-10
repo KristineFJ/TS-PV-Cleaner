@@ -41,6 +41,7 @@
     "@kubernetes/client-node": "^0.18.1",
     "class-transformer": "^0.5.1",
     "got": "^12.6.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "ssh2-promise": "^1.0.3"
   }
 }

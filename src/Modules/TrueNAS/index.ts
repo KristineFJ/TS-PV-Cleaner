@@ -3,6 +3,7 @@ import got, { Got, OptionsOfJSONResponseBody } from 'got'
 import { logger, LogMode } from '../../Library/Logger';
 import { TransformPlainToInstance } from 'class-transformer'
 import { TrueNASPool } from './Pool'
+import { TrueNASDataset } from './Dataset';
 
 interface TrueNASAPIConfig {
   apiURL: string;
@@ -28,7 +29,8 @@ export class TrueNASAPI {
         Accept: '*/*'
       },
       timeout: {
-        request: 500000
+        request: 5000000,
+        connect: 5000000
       },
     })
 
@@ -80,10 +82,16 @@ export class TrueNASAPI {
 //    return apiResponse;
   }
 
-  public async getDatasets(): Promise<void> {
-    const apiResponse = await this.makeRequest<any, {}>(`pool/dataset`);
+  @TransformPlainToInstance(TrueNASDataset)
+  public async getDatasets(): Promise<TrueNASDataset[]> {
+    const apiResponse = await this.makeRequest<TrueNASDataset[], {}>(`pool/dataset`);
+    return apiResponse;
+  }
 
-    logger.log(LogMode.INFO, 'Response for get Pools', apiResponse);  
+  public async getDataset(datasetID: string): Promise<void> {
+    const apiResponse = await this.makeRequest<any, {}>(`pool/dataset/id/${datasetID}`);
+
+    logger.log(LogMode.INFO, 'Response for get Dataset', apiResponse);  
   }
 
   public async getVolumes(): Promise<void> {
