@@ -1,8 +1,28 @@
 // src/Modules/TrueNAS/Dataset.ts
 import { Type } from 'class-transformer'
 
-class TrueNASCreation {
-  parsed: object;
+class ParsedDate {
+  @Type(() => Date)
+  public $date: Date;
+}
+
+class TrueNASDate {
+  @Type(() => ParsedDate)
+  parsed: ParsedDate;
+
+  @Type(() => String)
+  rawvalue: string;
+
+  @Type(() => Date)
+  value: Date;
+
+  @Type(() => String)
+  source: string;
+}
+
+class TrueNASUsage {
+  @Type(() => Number)
+  public parsed: string;
 
   @Type(() => String)
   rawvalue: string;
@@ -12,7 +32,6 @@ class TrueNASCreation {
 
   @Type(() => String)
   source: string;
-
 }
 
 export class TrueNASDataset {
@@ -65,39 +84,38 @@ export class TrueNASDataset {
   reservation: { parsed: null, rawvalue: '0', value: null, source: 'DEFAULT' },
   refreservation: { parsed: null, rawvalue: '0', value: null, source: 'LOCAL' },
   copies: { parsed: 1, rawvalue: '1', value: '1', source: 'INHERITED' },
-  readonly: { parsed: false, rawvalue: 'off', value: 'OFF', source: 'DEFAULT' },
-  volsize: {
-    parsed: 10737418240,
-    rawvalue: '10737418240',
-    value: '10G',
-    source: 'LOCAL'
-  },
-  volblocksize: { parsed: 16384, rawvalue: '16384', value: '16K', source: 'NONE' },
+  readonly: { parsed: false, rawvalue: 'off', value: 'OFF', source: 'DEFAULT' }, */
+  
+  @Type(() => TrueNASUsage)
+  volsize: TrueNASUsage;
+
+  @Type(() => TrueNASUsage)
+  volblocksize: TrueNASUsage;
+
+  /*
   key_format: {
     parsed: 'none',
     rawvalue: 'none',
     value: null,
     source: 'DEFAULT'
   },
-  encryption_algorithm: { parsed: 'off', rawvalue: 'off', value: null, source: 'DEFAULT' },
-  used: { parsed: 57344, rawvalue: '57344', value: '56K', source: 'NONE' },
-  available: {
-    parsed: 1051391684608,
-    rawvalue: '1051391684608',
-    value: '979G',
-    source: 'NONE'
-  },
-  pbkdf2iters: { parsed: '0', rawvalue: '0', value: '0', source: 'DEFAULT' }, */
+  encryption_algorithm: { parsed: 'off', rawvalue: 'off', value: null, source: 'DEFAULT' }, */
 
-  @Type(() => TrueNASCreation)
-  public creation: TrueNASCreation;
+  @Type(() => TrueNASUsage)
+  used: TrueNASUsage;
+
+  @Type(() => TrueNASUsage)
+  available: TrueNASUsage;
+  // pbkdf2iters: { parsed: '0', rawvalue: '0', value: '0', source: 'DEFAULT' }
+
+  @Type(() => TrueNASDate)
+  public creation: TrueNASDate;
 
   @Type(() => String)
   mountpoint?: string;
 
   public user_properties: {
     [key: string]: object;
-
   };
 
   @Type(() => Boolean)

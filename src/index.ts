@@ -1,9 +1,12 @@
 // src/index.ts
-import 'reflect-metadata'
+import 'reflect-metadata';
 import { logger, LogMode } from './Library/Logger';
 import { sayHello } from './Utils/sayHello';
-import { KubeAPI } from './Library/Kubernetes'
-import { TrueNASAPI } from './Modules/TrueNAS'
+import { KubeAPI } from './Library/Kubernetes';
+import { TrueNASAPI } from './Modules/TrueNAS';
+import { TrueNASDataset } from './Modules/TrueNAS/Dataset';
+import fs from 'fs/promises';
+import { plainToInstance } from 'class-transformer';
 
 const k8s = new KubeAPI();
 const nasAPI = new TrueNASAPI({
@@ -11,8 +14,8 @@ const nasAPI = new TrueNASAPI({
   credentials: {
     username: process.env.USERNAME as string,
     password: process.env.PASSWORD as string,
-  }
-})
+  },
+});
 
 logger.log(LogMode.INFO, `Starting Repair system`);
 
@@ -22,7 +25,7 @@ logger.log(LogMode.INFO, `Starting Repair system`);
 
 // for (const pv of pvs) {
 //   logger.log(LogMode.INFO, `Namespcae: ${pv.metadata?.namespace}`)
-  
+
 //   pvNames.push(pv.metadata?.name)
 // }
 
@@ -32,21 +35,41 @@ const pools = await nasAPI.getPools();
 
 const pool = pools.find(({ name }) => name === 'Site1.NAS1.Pool1');
 
-
 if (!!!pool) {
-  throw new Error(`Invalid Pool ID ${pool}`)
+  throw new Error(`Invalid Pool ID ${pool}`);
 }
 
+const cacheFile = 'output.json';
 
-const datasets = await nasAPI.getDatasets();
+try {
+  await fs.access(cacheFile);
 
-for (const dataset of datasets) {
-  if (dataset.id.startsWith('Site1.NAS1.Pool1/k8s')) {
-    logger.log(LogMode.INFO, `Dataset`, dataset)
+  const cacheFileData = await fs.readFile(cacheFile);
+
+  const cacheData = JSON.parse(cacheFileData.toString()) as TrueNASDataset[];
+
+  for (const { user_properties } of plainToInstance(
+    TrueNASDataset,
+    cacheData,
+  )) {
+    logger.log(LogMode.INFO, `Cache file contents`, user_properties);
   }
-}
+} catch {
+  logger.log(LogMode.WARN, `File does not yet exit`);
 
+  const dsArray = [];
+
+  const datasets = await nasAPI.getDatasets();
+
+  for (const dataset of datasets) {
+    if (dataset.id.startsWith('Site1.NAS1.Pool1/k8s')) {
+      dsArray.push(dataset);
+    }
+  }
+
+  await fs.writeFile(cacheFile, JSON.stringify(dsArray));
+}
 
 await sayHello('K-FOSS');
 
-export { };
+export {};
