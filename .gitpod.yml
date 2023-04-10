@@ -6,4 +6,4 @@ tasks:
   - init: npm install && npm run build
     command: npm run dev
 
-
+image: gitpod/workspace-node:latest
