@@ -4,6 +4,7 @@ import { logger, LogMode } from '../../Library/Logger';
 import { TransformPlainToInstance } from 'class-transformer';
 import { TrueNASPool } from './Pool';
 import { TrueNASDataset } from './Dataset';
+import { TrueNASExtent, TrueNASiSCSITarget } from './iSCSI';
 
 interface TrueNASAPIConfig {
   apiURL: string;
@@ -34,45 +35,107 @@ export class TrueNASAPI {
     });
   }
 
-  private async makeRequest<
-    RepsonseType,
-    Body extends OptionsOfJSONResponseBody,
-  >(path: string, body?: Body): Promise<RepsonseType> {
+  private async makeRequest<RepsonseType, Body>(
+    path: string,
+    options?: OptionsOfJSONResponseBody,
+  ): Promise<RepsonseType> {
     const apiRespones = await this.api<RepsonseType>(path, {
       responseType: 'json',
+      ...options,
     });
 
     return apiRespones.body;
   }
 
-  public async getiSCSIExtends(): Promise<void> {
-    const apiResponse = await this.makeRequest('iscsi/extent');
+  @TransformPlainToInstance(TrueNASExtent)
+  public async getiSCSIExtends(): Promise<TrueNASExtent[]> {
+    const apiResponse = await this.makeRequest<TrueNASExtent[], {}>(
+      'iscsi/extent',
+    );
 
-    logger.log(LogMode.INFO, 'Response for iSCSI Extents', apiResponse);
+    return apiResponse;
   }
 
-  public async getiSCSIExtent(extentId: string): Promise<void> {
-    const apiResponse = await this.makeRequest(`iscsi/extent/id/${extentId}`);
+  @TransformPlainToInstance(TrueNASExtent)
+  public async getiSCSIExtent(extentId: string): Promise<TrueNASExtent> {
+    const apiResponse = await this.makeRequest<TrueNASExtent, {}>(
+      `iscsi/extent/id/${extentId}`,
+    );
 
-    logger.log(LogMode.INFO, 'Response for iSCSI Extents', apiResponse);
+    return apiResponse;
   }
 
-  public async getiSCSITargets(): Promise<void> {
-    const apiResponse = await this.makeRequest('iscsi/target');
+  /**
+   * Delete iSCSI Extent Agaisnst TrueNAS API
+   * @param extentId iSCSI Extent ID
+   */
+  public async deleteiSCSIExtent(extentId: string): Promise<void> {
+    const apiResponse = await this.makeRequest<TrueNASExtent, {}>(
+      `iscsi/extent/id/${extentId}`,
+      {
+        method: 'DELETE',
+      },
+    );
 
-    logger.log(LogMode.INFO, 'Response for iSCSI Targets', apiResponse);
+    logger.log(LogMode.INFO, 'Response for Deleting Extent', apiResponse);
   }
 
-  public async getiSCSITarget(targetId: string): Promise<void> {
-    const apiResponse = await this.makeRequest(`iscsi/target/id/${targetId}`);
+  @TransformPlainToInstance(TrueNASiSCSITarget)
+  public async getiSCSITargets(): Promise<TrueNASiSCSITarget[]> {
+    const apiResponse = await this.makeRequest<TrueNASiSCSITarget[], {}>(
+      'iscsi/target',
+    );
 
-    logger.log(LogMode.INFO, 'Response for iSCSI Targets', apiResponse);
+    return apiResponse;
+  }
+
+  @TransformPlainToInstance(TrueNASiSCSITarget)
+  public async getiSCSITarget(targetId: string): Promise<TrueNASiSCSITarget> {
+    const apiResponse = await this.makeRequest<TrueNASiSCSITarget, {}>(
+      `iscsi/target/id/${targetId}`,
+    );
+
+    return apiResponse;
+  }
+
+  public async deleteiSCSITarget(targetId: string): Promise<void> {
+    const apiResponse = await this.makeRequest<TrueNASiSCSITarget, {}>(
+      `iscsi/target/id/${targetId}`,
+      {
+        method: 'DELETE',
+      },
+    );
+
+    logger.log(LogMode.INFO, 'Response for Deleting Target', apiResponse);
   }
 
   public async getiSCSITargetExtents(): Promise<void> {
     const apiResponse = await this.makeRequest('iscsi/targetextent');
 
     logger.log(LogMode.INFO, 'Response fro Check Auth', apiResponse);
+  }
+
+  public async getiSCSITargetExtent(targetExtentID: string): Promise<void> {
+    const apiResponse = await this.makeRequest(
+      `iscsi/targetextent/id/${targetExtentID}`,
+    );
+
+    logger.log(LogMode.INFO, 'Response for Target Extent', apiResponse);
+  }
+
+  /**
+   * Delete iSCSI Target Extent on the TrueNAS API
+   * @param targetExtentID iSCSI Target Extent ID
+   */
+  public async deleteiSCSITargetExtent(targetExtentID: string): Promise<void> {
+    const apiResponse = await this.makeRequest(
+      `iscsi/targetextent/id/${targetExtentID}`,
+      {
+        method: 'DELETE',
+      },
+    );
+
+    logger.log(LogMode.INFO, 'Response for Delete Target Extent', apiResponse);
   }
 
   @TransformPlainToInstance(TrueNASPool)
@@ -100,10 +163,21 @@ export class TrueNASAPI {
 
   public async getDataset(datasetID: string): Promise<void> {
     const apiResponse = await this.makeRequest<any, {}>(
-      `pool/dataset/id/${datasetID}`,
+      `pool/dataset?id=${datasetID}`,
     );
 
     logger.log(LogMode.INFO, 'Response for get Dataset', apiResponse);
+  }
+
+  public async deleteDataset(datasetID: string): Promise<void> {
+    const apiResponse = await this.makeRequest<any, {}>(
+      `pool/dataset/id/${encodeURIComponent(datasetID)}`,
+      {
+        method: 'DELETE',
+      },
+    );
+
+    logger.log(LogMode.INFO, 'Response for Delete Dataset', apiResponse);
   }
 
   public async getVolumes(): Promise<void> {}

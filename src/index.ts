@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import { plainToInstance } from 'class-transformer';
 
 const k8s = new KubeAPI();
+
 const nasAPI = new TrueNASAPI({
   apiURL: 'http://172.31.241.70/api/v2.0',
   credentials: {
@@ -90,26 +91,50 @@ for (const [pvName, dataSet] of dontExistPV) {
   logger.log(LogMode.INFO, `Bad PV to be deleted is ${pvName}`);
 
   if (dataSet.used.value === '56K') {
-    const extentProp =
-      dataSet.user_properties['democratic-csi:freenas_iscsi_extent_id'];
+    logger.log(
+      LogMode.INFO,
+      `Dataset to be deleted is ${pvName} ${dataSet.id}`,
+      dataSet,
+    );
 
-    if (extentProp !== undefined) {
-      logger.log(LogMode.INFO, `Extent prop`, extentProp);
-    }
+    await nasAPI.deleteDataset(dataSet.id);
 
-    const targetProp =
-      dataSet.user_properties['democratic-csi:freenas_iscsi_target_id'];
+    // const extentTargetProp =
+    //   dataSet.user_properties['democratic-csi:freenas_iscsi_targettoextent_id'];
 
-    if (targetProp !== undefined) {
-      logger.log(LogMode.INFO, `Target prop`, targetProp);
-    }
+    // if (extentTargetProp !== undefined) {
+    //   try {
+    //     await nasAPI.getiSCSITargetExtent(extentTargetProp.value);
 
-    const extentTargetProp =
-      dataSet.user_properties['democratic-csi:freenas_iscsi_targettoextent_id'];
+    //     await nasAPI.deleteiSCSITargetExtent(extentTargetProp.value);
+    //   } catch {}
 
-    if (extentTargetProp !== undefined) {
-      logger.log(LogMode.INFO, `Extent Target prop`, extentTargetProp);
-    }
+    //   logger.log(LogMode.INFO, `Extent Target prop`, extentTargetProp.value);
+    // }
+
+    // const extentProp =
+    //   dataSet.user_properties['democratic-csi:freenas_iscsi_extent_id'];
+
+    // if (extentProp !== undefined) {
+    //   logger.log(LogMode.INFO, `Extent prop`, extentProp.value);
+
+    //   try {
+    //     await nasAPI.getiSCSIExtent(extentProp.value);
+    //     await nasAPI.deleteiSCSIExtent(extentProp.value);
+    //   } catch {}
+    // }
+
+    // const targetProp =
+    //   dataSet.user_properties['democratic-csi:freenas_iscsi_target_id'];
+
+    // if (targetProp !== undefined) {
+    //   logger.log(LogMode.INFO, `Target prop`, targetProp.value);
+
+    //   try {
+    //     await nasAPI.getiSCSITarget(targetProp.value);
+    //     await nasAPI.deleteiSCSITarget(targetProp.value);
+    //   } catch {}
+    // }
 
     // if (
     //   dataSet.user_properties['democratic-csi:freenas_iscsi_extent_id']
