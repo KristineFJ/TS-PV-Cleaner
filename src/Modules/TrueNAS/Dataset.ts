@@ -1,5 +1,5 @@
 // src/Modules/TrueNAS/Dataset.ts
-import { Type } from 'class-transformer'
+import { Type } from 'class-transformer';
 
 class ParsedDate {
   @Type(() => Date)
@@ -43,21 +43,20 @@ export class TrueNASDataset {
 
   @Type(() => String)
   public name: string;
-  
+
   @Type(() => String)
   public pool: string;
 
   @Type(() => Boolean)
-  encrypted: boolean
+  encrypted: boolean;
 
-  
   children: string[];
 
   managedby: {
-    value: string,
-    rawvalue: string,
-    source: string,
-    parsed: string
+    value: string;
+    rawvalue: string;
+    source: string;
+    parsed: string;
   };
 
   /* deduplication: { parsed: 'off', rawvalue: 'off', value: 'OFF', source: 'DEFAULT' },
@@ -85,7 +84,7 @@ export class TrueNASDataset {
   refreservation: { parsed: null, rawvalue: '0', value: null, source: 'LOCAL' },
   copies: { parsed: 1, rawvalue: '1', value: '1', source: 'INHERITED' },
   readonly: { parsed: false, rawvalue: 'off', value: 'OFF', source: 'DEFAULT' }, */
-  
+
   @Type(() => TrueNASUsage)
   volsize: TrueNASUsage;
 
@@ -115,7 +114,7 @@ export class TrueNASDataset {
   mountpoint?: string;
 
   public user_properties: {
-    [key: string]: object;
+    [key: string]: { [key: string]: string };
   };
 
   @Type(() => Boolean)

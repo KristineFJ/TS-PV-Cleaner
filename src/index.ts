@@ -19,18 +19,6 @@ const nasAPI = new TrueNASAPI({
 
 logger.log(LogMode.INFO, `Starting Repair system`);
 
-// const pvs = await k8s.getPVs();
-
-// const pvNames = [];
-
-// for (const pv of pvs) {
-//   logger.log(LogMode.INFO, `Namespcae: ${pv.metadata?.namespace}`)
-
-//   pvNames.push(pv.metadata?.name)
-// }
-
-// logger.log(LogMode.INFO, `Total count of PVs is ${pvNames.length}`);
-
 const pools = await nasAPI.getPools();
 
 const pool = pools.find(({ name }) => name === 'Site1.NAS1.Pool1');
@@ -43,17 +31,6 @@ const cacheFile = 'output.json';
 
 try {
   await fs.access(cacheFile);
-
-  const cacheFileData = await fs.readFile(cacheFile);
-
-  const cacheData = JSON.parse(cacheFileData.toString()) as TrueNASDataset[];
-
-  for (const { user_properties } of plainToInstance(
-    TrueNASDataset,
-    cacheData,
-  )) {
-    logger.log(LogMode.INFO, `Cache file contents`, user_properties);
-  }
 } catch {
   logger.log(LogMode.WARN, `File does not yet exit`);
 
@@ -68,6 +45,92 @@ try {
   }
 
   await fs.writeFile(cacheFile, JSON.stringify(dsArray));
+}
+
+const cacheFileData = await fs.readFile(cacheFile);
+
+const cacheData = JSON.parse(cacheFileData.toString()) as TrueNASDataset[];
+
+let badCount = 0;
+let goodCount = 0;
+const dontExistPV: [string, TrueNASDataset][] = [];
+const doExistPV = [];
+
+for (const dataset of plainToInstance(TrueNASDataset, cacheData)) {
+  const k8sName = dataset.user_properties['democratic-csi:csi_volume_name'];
+
+  try {
+    const k8sAPIVolume = await k8s.getPV(k8sName.value);
+
+    logger.log(
+      LogMode.INFO,
+      `${TrueNASDataset.name} does exist`,
+      k8sName.value,
+      k8sAPIVolume,
+    );
+
+    goodCount++;
+
+    doExistPV.push(k8sName.value);
+  } catch {
+    logger.log(
+      LogMode.INFO,
+      `${TrueNASDataset.name} should not exist`,
+      k8sName.value,
+    );
+    badCount++;
+
+    dontExistPV.push([k8sName.value, dataset]);
+  }
+}
+
+logger.log(LogMode.INFO, `Good Count: ${goodCount}\nBad Count: ${badCount}`);
+
+for (const [pvName, dataSet] of dontExistPV) {
+  logger.log(LogMode.INFO, `Bad PV to be deleted is ${pvName}`);
+
+  if (dataSet.used.value === '56K') {
+    const extentProp =
+      dataSet.user_properties['democratic-csi:freenas_iscsi_extent_id'];
+
+    if (extentProp !== undefined) {
+      logger.log(LogMode.INFO, `Extent prop`, extentProp);
+    }
+
+    const targetProp =
+      dataSet.user_properties['democratic-csi:freenas_iscsi_target_id'];
+
+    if (targetProp !== undefined) {
+      logger.log(LogMode.INFO, `Target prop`, targetProp);
+    }
+
+    const extentTargetProp =
+      dataSet.user_properties['democratic-csi:freenas_iscsi_targettoextent_id'];
+
+    if (extentTargetProp !== undefined) {
+      logger.log(LogMode.INFO, `Extent Target prop`, extentTargetProp);
+    }
+
+    // if (
+    //   dataSet.user_properties['democratic-csi:freenas_iscsi_extent_id']
+    //     ?.value !== undefined &&
+    //   dataSet.user_properties['democratic-csi:freenas_iscsi_targettoextent_id']
+    //     ?.value !== undefined
+    // ) {
+    //   const { value: targetId } =
+    //     dataSet.user_properties['democratic-csi:freenas_iscsi_target_id'];
+
+    //   logger.log(
+    //     LogMode.INFO,
+    //     `Bad PV be deleted ${pvName}\nextentID: ${extentId}\nTargetID: ${targetId}\nextentTargetID: ${extentTargetID}`,
+    //   );
+    // } else {
+    //   logger.log(
+    //     LogMode.INFO,
+    //     `Bad PV be deleted ${pvName}`
+    //   );
+    // }
+  }
 }
 
 await sayHello('K-FOSS');

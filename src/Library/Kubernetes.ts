@@ -24,4 +24,9 @@ export class KubeAPI {
 
     return items;
   }
+
+  public async getPV(pvName: string): Promise<k8s.V1PersistentVolume> {
+    const { body } = await this.kubeAPI.readPersistentVolume(pvName);
+    return body;
+  }
 }
